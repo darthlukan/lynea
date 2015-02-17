@@ -17,7 +17,7 @@
 * Handle signals as appropriate for an init system
 
 > Anything else that can be handled by another tool should probably be handled by that tool, so anything beyond
-> the functionality provided beyond the five points above should not be expected. Ever.
+> the functionality provided by the five points above should not be expected. Ever.
 
 ## License
 
