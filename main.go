@@ -1,129 +1,150 @@
 package main
 
 import (
-    "os"
-    "os/signal"
-    "net"
-    "fmt"
-    "syscall"
+	"errors"
+	"fmt"
+	"net"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 )
 
 var (
-    ProcessStack []Process
-    sigChan = make(chan os.Signal, 1)
+	ProcessStack []Process
+	sigChan      = make(chan os.Signal, 1)
 )
 
 const (
-    DELAY = 10
-    initSocket = "/run/lynea/init"
+	DELAY      = 10
+	initSocket = "/run/lynea/init"
 )
 
 type Process struct {
-    Pid int
-    State, Cli string
+	Pid        int
+	State, Cli string
 }
 
-func RouteCommand() {
-    // Which command are we?
+func RouteCommand(state, cmd string) error {
+	// Which command are we?
+	var err error
+	var process Process
+
+	switch strings.ToLower(state) {
+	case "start":
+		process, err = Start()
+	case "restart":
+		process, err = Restart()
+	case "stop":
+		process, err = Stop()
+	default:
+		err = errors.New("Nothing to do, is this really an error?")
+	}
+
+	if err == nil {
+		ProcessStack = append(ProcessStack, process)
+	}
+
+	return err
 }
 
-func Exec() {
-    // Execute command
+func Exec() (Process, error) {
+	// Execute command
 }
 
-func Fork() {
-    // Make a channel for the supplied service arg
-    // append it to ProcessChanStack
+func Fork() (Process, error) {
+	// Make a channel for the supplied service arg
+	// append it to ProcessChanStack
 }
 
 func Reboot() {
-    // Reboot system
-    // /sbin/reboot
+	// Reboot system
+	// /sbin/reboot
 }
 
 func Shutdown() {
-    // Shutdown system
-    // /sbin/halt
+	// Shutdown system
+	// /sbin/halt
 }
 
 func Poweroff() {
-    // Poweroff system
-    // /sbin/poweroff
+	// Poweroff system
+	// /sbin/poweroff
 }
 
-func Start() {
-    // Start Process
+func Start() (Process, error) {
+	// Start Process
 }
 
-func Restart() {
-    // Restart Process
+func Restart() (Process, error) {
+	// Restart Process
 }
 
-func Stop() {
-    // Stop Process
+func Stop() (Process, error) {
+	// Stop Process
 }
 
 func GetBaseServices() {
-    // Services required to have a minimally running system
-    // Defined in /etc/lynea/services/base
+	// Services required to have a minimally running system
+	// Defined in /etc/lynea/services/base
 }
 
 func DesiredServices() {
-    // Read from /etc/lynea/services/user_defined
-    // and Fork
+	// Read from /etc/lynea/services/user_defined
+	// and Fork
 }
 
 func StartupSystem() {
 
-    // PID 1
-    // Socket dir /run
-    // Mount virtual filesystems
-    // Mount real filesystems
-    // Set $HOSTNAME (/proc/sys/kernel/hostname)
-    // Create tmpfiles
-    // Spawn TTYs
-    // Exec (Fork) base services
+	// PID 1
+	// Socket dir /run
+	// Mount virtual filesystems
+	// Mount real filesystems
+	// Set $HOSTNAME (/proc/sys/kernel/hostname)
+	// Create tmpfiles
+	// Spawn TTYs
+	// Exec (Fork) base services
 }
 
 func Dispatcher(socketConn *net.UnixConn) {
-    buffer := make([]byte, 1024)
-    outOfBand := make([]byte, 1024)
+	buffer := make([]byte, 1024)
+	outOfBand := make([]byte, 1024)
 
-    size, oob, flags, addr, err := socketConn.ReadMsgUnix(buffer, outOfBand)
-    if err != nil {
-        fmt.Printf("Caught error '%v' while reading from socket\n", err)
-    }
-    // TODO: Switch...case -> functions
-    fmt.Printf("received: '%s' from buffer\n", string(buffer[:size]))
-    fmt.Printf("received: '%s' from oob\n", string(outOfBand[:oob]))
-    fmt.Printf("received flags: %v, from addr: %v.\n", flags, addr)
+	size, oob, flags, addr, err := socketConn.ReadMsgUnix(buffer, outOfBand)
+	if err != nil {
+		fmt.Printf("Caught error '%v' while reading from socket\n", err)
+	}
+	// TODO: Switch...case -> functions
+	fmt.Printf("received: '%s' from buffer\n", string(buffer[:size]))
+	fmt.Printf("received: '%s' from oob\n", string(outOfBand[:oob]))
+	fmt.Printf("received flags: %v, from addr: %v.\n", flags, addr)
 }
 
 func main() {
-    signal.Notify(sigChan, os.Interrupt)
-    signal.Notify(sigChan, syscall.SIGTERM)
-    signal.Notify(sigChan, syscall.SIGKILL)
+	signal.Notify(sigChan, syscall.SIGINT)
+	signal.Notify(sigChan, syscall.SIGTERM)
+	signal.Notify(sigChan, syscall.SIGKILL)
 
-    go func() {
-        sig := <-sigChan
-        fmt.Printf("Received signal: %v\n", sig)
-    }()
+	go func() {
+		sig := <-sigChan
+		fmt.Printf("Received signal: %v\n", sig)
+	}()
 
-    sockAddr, err := net.ResolveUnixAddr("unix", initSocket)
-    if err != nil {
-        fmt.Printf("Caught error '%v' resolving socket address.\n", err)
-    }
+	sockAddr, err := net.ResolveUnixAddr("unix", initSocket)
+	if err != nil {
+		fmt.Printf("Caught error '%v' resolving socket address.\n", err)
+	}
 
-    listener, err := net.ListenUnix("unix", sockAddr)
-    if err != nil {
-        fmt.Printf("Caught error '%v' trying to listen on '%v'\n", err, initSocket)
-    }
+	listener, err := net.ListenUnix("unix", sockAddr)
+	if err != nil {
+		fmt.Printf("Caught error '%v' trying to listen on '%v'\n", err, initSocket)
+	}
 
-    for {
-        sockConn, err := listener.AcceptUnix()
-        if err != nil {
-            fmt.Printf("Caught error '%v' listening on '%v'\n", err, initSocket)
-        }
-        go Dispatcher(sockConn)
-    }
+	for {
+		sockConn, err := listener.AcceptUnix()
+		if err != nil {
+			fmt.Printf("Caught error '%v' listening on '%v'\n", err, initSocket)
+		}
+		Dispatcher(sockConn)
+	}
 }
