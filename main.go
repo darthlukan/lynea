@@ -106,18 +106,9 @@ func StartupSystem() {
 	// Exec (Fork) base services
 }
 
-func Dispatcher(socketConn *net.UnixConn) {
-	buffer := make([]byte, 1024)
-	outOfBand := make([]byte, 1024)
-
-	size, oob, flags, addr, err := socketConn.ReadMsgUnix(buffer, outOfBand)
-	if err != nil {
-		fmt.Printf("Caught error '%v' while reading from socket\n", err)
-	}
-	// TODO: Switch...case -> functions
-	fmt.Printf("received: '%s' from buffer\n", string(buffer[:size]))
-	fmt.Printf("received: '%s' from oob\n", string(outOfBand[:oob]))
-	fmt.Printf("received flags: %v, from addr: %v.\n", flags, addr)
+func MkNamedPipe(name string) error {
+	// syscall.Mkfifo(path string, mode uint32) (error)
+	return nil
 }
 
 func main() {
@@ -130,21 +121,9 @@ func main() {
 		fmt.Printf("Received signal: %v\n", sig)
 	}()
 
-	sockAddr, err := net.ResolveUnixAddr("unix", initSocket)
-	if err != nil {
-		fmt.Printf("Caught error '%v' resolving socket address.\n", err)
-	}
-
-	listener, err := net.ListenUnix("unix", sockAddr)
-	if err != nil {
-		fmt.Printf("Caught error '%v' trying to listen on '%v'\n", err, initSocket)
-	}
-
 	for {
-		sockConn, err := listener.AcceptUnix()
-		if err != nil {
-			fmt.Printf("Caught error '%v' listening on '%v'\n", err, initSocket)
-		}
-		Dispatcher(sockConn)
+		// Read named pipe
+		// route input to appropriate function
+		// continue listening
 	}
 }
