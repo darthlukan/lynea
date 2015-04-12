@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -106,9 +105,24 @@ func StartupSystem() {
 	// Exec (Fork) base services
 }
 
-func MkNamedPipe(name string) error {
-	// syscall.Mkfifo(path string, mode uint32) (error)
-	return nil
+func MkNamedPipe() error {
+	return syscall.Mkfifo(initSocket, syscall.S_IFIFO|0666)
+}
+
+func ReadFromPipe() (string, error) {
+	recvData := make([]byte, 100)
+	np, err := os.Open(initSocket)
+	if err != nil {
+		panic(err) // Placeholder, we don't ever want to just die!
+	}
+	defer np.Close()
+
+	count, err := np.Read(recvData)
+	if err != nil {
+		panic(err) // Same here, don't die
+	}
+	data := string(recvData[:count])
+	return data, nil
 }
 
 func main() {
