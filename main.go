@@ -113,16 +113,16 @@ func ReadFromPipe() (string, error) {
 	recvData := make([]byte, 100)
 	np, err := os.Open(initSocket)
 	if err != nil {
-		panic(err) // Placeholder, we don't ever want to just die!
+		fmt.Println(err)
 	}
 	defer np.Close()
 
 	count, err := np.Read(recvData)
 	if err != nil {
-		panic(err) // Same here, don't die
+		fmt.Println(err)
 	}
 	data := string(recvData[:count])
-	return data, nil
+	return data, err
 }
 
 func main() {
@@ -136,8 +136,16 @@ func main() {
 	}()
 
 	for {
+		// The following blocks, wrap in a goroutine
 		// Read named pipe
-		// route input to appropriate function
+		data, err := ReadFromPipe()
+		if err != nil {
+			fmt.Printf("Received error: %v and data: %v\n", err, data)
+		}
+		if len(data) > 0 {
+			// route input to appropriate function
+			fmt.Printf("Received data: %v\n", data)
+		}
 		// continue listening
 	}
 }
