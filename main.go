@@ -125,7 +125,23 @@ func ReadFromPipe() (string, error) {
 	return data, err
 }
 
-func main() {
+func ParsePipeData(data string) map[string]string {
+	// data is the content of initSocket, make sure to only read the last line sent in
+	// should be of structure: <command> <arg>
+	splitData := strings.Split(data, "\n")
+	lastLine := strings.Split(splitData[len(splitData)-1], " ")
+
+	if len(lastLine) == 2 {
+		cmdMap := map[string]string{
+			"cmd": lastLine[0],
+			"arg": lastLine[1],
+		}
+		return cmdMap
+	}
+	return nil
+}
+
+func init() {
 	signal.Notify(sigChan, syscall.SIGINT)
 	signal.Notify(sigChan, syscall.SIGTERM)
 	signal.Notify(sigChan, syscall.SIGKILL)
@@ -135,16 +151,28 @@ func main() {
 		fmt.Printf("Received signal: %v\n", sig)
 	}()
 
+	err := MkNamedPipe()
+	if err != nil {
+		panic(err) // TODO: Don't actually panic, try to drop to a shell or something
+	}
+}
+
+func main() {
+
 	for {
-		// The following blocks, wrap in a goroutine
+		// The following blocks, wrap in a goroutine if this becomes a problem
 		// Read named pipe
 		data, err := ReadFromPipe()
 		if err != nil {
 			fmt.Printf("Received error: %v and data: %v\n", err, data)
 		}
 		if len(data) > 0 {
-			// route input to appropriate function
 			fmt.Printf("Received data: %v\n", data)
+			cmdMap := ParsePipeData(data)
+
+			if cmdMap != nil {
+				// route
+			}
 		}
 		// continue listening
 	}
