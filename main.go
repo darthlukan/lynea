@@ -1,7 +1,7 @@
 package main
 
 import (
-	"errors"
+	// "errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -31,13 +31,13 @@ func RouteCommand(state, cmd string) error {
 
 	switch strings.ToLower(state) {
 	case "start":
-		process, err = Start()
+		// process, err = Start()
 	case "restart":
-		process, err = Restart()
+		// process, err = Restart()
 	case "stop":
-		process, err = Stop()
+		// process, err = Stop()
 	default:
-		err = errors.New("Nothing to do, is this really an error?")
+		// err = errors.New("Nothing to do, is this really an error?")
 	}
 
 	if err == nil {
@@ -47,11 +47,11 @@ func RouteCommand(state, cmd string) error {
 	return err
 }
 
-func Exec() (Process, error) {
+func Exec() {
 	// Execute command
 }
 
-func Fork() (Process, error) {
+func Fork() {
 	// Make a channel for the supplied service arg
 	// append it to ProcessChanStack
 }
@@ -71,15 +71,15 @@ func Poweroff() {
 	// /sbin/poweroff
 }
 
-func Start() (Process, error) {
+func Start() {
 	// Start Process
 }
 
-func Restart() (Process, error) {
+func Restart() {
 	// Restart Process
 }
 
-func Stop() (Process, error) {
+func Stop() {
 	// Stop Process
 }
 
@@ -113,13 +113,13 @@ func ReadFromPipe() (string, error) {
 	recvData := make([]byte, 100)
 	np, err := os.Open(initSocket)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("ReadFromPipe open: %v\n", err)
 	}
 	defer np.Close()
 
 	count, err := np.Read(recvData)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("ReadFromPipe read: %v\n", err)
 	}
 	data := string(recvData[:count])
 	return data, err
@@ -153,7 +153,7 @@ func init() {
 
 	err := MkNamedPipe()
 	if err != nil {
-		panic(err) // TODO: Don't actually panic, try to drop to a shell or something
+		fmt.Printf("Init panic: %v\n", err) // TODO: Don't actually panic, try to drop to a shell or something
 	}
 }
 
