@@ -15,8 +15,9 @@ var (
 )
 
 const (
-	DELAY      = 10
-	initSocket = "/run/lynea/init"
+	DELAY = 10
+	// initSocket = "/run/lynea/init"
+	initSocket = "/home/darthlukan/tmp/lynea"
 )
 
 type Process struct {
@@ -129,7 +130,9 @@ func ParsePipeData(data string) map[string]string {
 	// data is the content of initSocket, make sure to only read the last line sent in
 	// should be of structure: <command> <arg>
 	splitData := strings.Split(data, "\n")
+	fmt.Printf("splitData: %v\n", splitData)
 	lastLine := strings.Split(splitData[len(splitData)-1], " ")
+	fmt.Printf("lastLine: %v\n", lastLine)
 
 	if len(lastLine) == 2 {
 		cmdMap := map[string]string{
