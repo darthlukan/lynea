@@ -18,11 +18,12 @@ const (
 	DELAY = 10
 	// initSocket = "/run/lynea/init"
 	initSocket = "/home/darthlukan/tmp/lynea"
+	confDir    = "/etc/init"
 )
 
 type Process struct {
-	Pid        int
-	State, Cli string
+	Pid int
+	Cli string
 }
 
 func RouteCommand(state, cmd string) error {
@@ -31,6 +32,10 @@ func RouteCommand(state, cmd string) error {
 	var process Process
 
 	switch strings.ToLower(state) {
+	case "enable":
+		// Set service to start with system (copy service.json to /etc/init/services/
+	case "disable":
+		// remove service.json from /etc/init/services/
 	case "start":
 		// process, err = Start()
 	case "restart":
@@ -160,7 +165,18 @@ func init() {
 	}
 }
 
+func PIDOneCheck() bool {
+	// Are we PID 1?
+	// look in /proc/1/status => Name (first line of file: "Name: $NAME")
+	// $NAME == "lynea" => true || false
+	return true
+}
+
 func main() {
+
+	if pid1 := PIDOneCheck(); pid1 == true {
+		// execute bootup, base services, etc
+	}
 
 	for {
 		// The following blocks, wrap in a goroutine if this becomes a problem
