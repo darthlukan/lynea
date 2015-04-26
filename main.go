@@ -152,7 +152,7 @@ func ParsePipeData(data string) Command {
 	if len(splitData) == 2 {
 		cmd.Type = splitData[0]
 		cmd.Arg = splitData[1]
-		fmt.Printf("returning cmdMap: %v\n", cmd)
+		fmt.Printf("returning cmd: %v\n", cmd)
 	}
 	return cmd
 }
