@@ -176,16 +176,16 @@ func PIDOneCheck() bool {
 		lines = append(lines, scanner.Text())
 	}
 
-	name := strings.Split(lines[0], " ")[0]
-	if name == "lynea" {
+	if strings.Contains(lines[0], "lynea") {
 		return true
 	}
 	return false
 }
 
 func init() {
+	fmt.Printf("Lynea initializing...\n")
 	err := MkNamedPipe()
-	if err != nil {
+	if err != nil && err.Error() != "file exists" {
 		fmt.Printf("Init panic: %v\n", err) // TODO: Don't actually panic, try to drop to a shell or something
 	}
 
@@ -209,11 +209,15 @@ func main() {
 		}
 	}()
 
+	fmt.Printf("Running...\n")
 	for {
 		// TODO: Determine if this can be handled safely by a goroutine, also, profile to see how performant it's not.
 		data, err := ReadFromPipe()
 		if err != nil {
-			fmt.Printf("Received error: %v and data: %v\n", err, data)
+			if err.Error() != "EOF" && len(data) == 0 {
+				// We'll get EOF as a normal occurrence but we only care if data is not populated.
+				fmt.Printf("Received error: '%v' and data: '%v'\n", err, data)
+			}
 		}
 		if len(data) > 0 {
 			fmt.Printf("Received data: %v\n", data)
