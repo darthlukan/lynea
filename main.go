@@ -2,6 +2,7 @@ package main
 
 import (
 	// "errors"
+	"bufio"
 	"fmt"
 	"os"
 	"os/signal"
@@ -149,7 +150,46 @@ func ParsePipeData(data string) map[string]string {
 	return nil
 }
 
+func PIDOneCheck() bool {
+	// Are we PID 1?
+	// look in /proc/1/status => Name (first line of file: "Name: $NAME")
+	// $NAME == "lynea" => true || false
+
+	pfile, err := os.Open("/proc/1/status")
+	if err != nil {
+		fmt.Printf("PIDOneCheck caught error: %v\n", err)
+		return false
+	}
+	defer pfile.Close()
+
+	var lines []string
+
+	scanner := bufio.NewScanner(pfile)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	name := strings.Split(lines[0], " ")[0]
+	if name == "lynea" {
+		return true
+	}
+	return false
+}
+
 func init() {
+	err := MkNamedPipe()
+	if err != nil {
+		fmt.Printf("Init panic: %v\n", err) // TODO: Don't actually panic, try to drop to a shell or something
+	}
+
+	if pid1 := PIDOneCheck(); pid1 == true {
+		// execute bootup, base services, etc
+		fmt.Printf("Booting the system...\n")
+		StartupSystem() // TODO: Fill this out
+	}
+}
+
+func main() {
 	signal.Notify(sigChan, syscall.SIGINT)
 	signal.Notify(sigChan, syscall.SIGTERM)
 	signal.Notify(sigChan, syscall.SIGKILL)
@@ -158,25 +198,6 @@ func init() {
 		sig := <-sigChan
 		fmt.Printf("Received signal: %v\n", sig)
 	}()
-
-	err := MkNamedPipe()
-	if err != nil {
-		fmt.Printf("Init panic: %v\n", err) // TODO: Don't actually panic, try to drop to a shell or something
-	}
-}
-
-func PIDOneCheck() bool {
-	// Are we PID 1?
-	// look in /proc/1/status => Name (first line of file: "Name: $NAME")
-	// $NAME == "lynea" => true || false
-	return true
-}
-
-func main() {
-
-	if pid1 := PIDOneCheck(); pid1 == true {
-		// execute bootup, base services, etc
-	}
 
 	for {
 		// The following blocks, wrap in a goroutine if this becomes a problem
