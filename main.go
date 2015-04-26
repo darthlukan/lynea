@@ -38,12 +38,12 @@ func (c Command) IsEmpty() bool {
 	return false
 }
 
-func RouteCommand(state, cmd string) error {
+func RouteCommand(cmd Command) error {
 	// Which command are we?
 	var err error
 	var process Process
 
-	switch strings.ToLower(state) {
+	switch strings.ToLower(cmd.Type) {
 	case "enable":
 		// Set service to start with system (copy service.json to /etc/init/services/
 	case "disable":
@@ -210,8 +210,7 @@ func main() {
 	}()
 
 	for {
-		// The following blocks, wrap in a goroutine if this becomes a problem
-		// Read named pipe
+		// TODO: Determine if this can be handled safely by a goroutine, also, profile to see how performant it's not.
 		data, err := ReadFromPipe()
 		if err != nil {
 			fmt.Printf("Received error: %v and data: %v\n", err, data)
