@@ -27,6 +27,17 @@ type Process struct {
 	Cli string
 }
 
+type Command struct {
+	Type, Arg string
+}
+
+func (c Command) IsEmpty() bool {
+	if len(c.Type) == 0 && len(c.Arg) == 0 {
+		return true
+	}
+	return false
+}
+
 func RouteCommand(state, cmd string) error {
 	// Which command are we?
 	var err error
@@ -132,22 +143,18 @@ func ReadFromPipe() (string, error) {
 	return data, err
 }
 
-func ParsePipeData(data string) map[string]string {
+func ParsePipeData(data string) Command {
 	// data is the content of initSocket, make sure to only read the last line sent in
 	// should be of structure: <command> <arg>
-	splitData := strings.Split(data, "\n")
-	fmt.Printf("splitData: %v\n", splitData)
-	lastLine := strings.Split(splitData[len(splitData)-1], " ")
-	fmt.Printf("lastLine: %v\n", lastLine)
+	splitData := strings.Split(data, " ")
+	var cmd Command
 
-	if len(lastLine) == 2 {
-		cmdMap := map[string]string{
-			"cmd": lastLine[0],
-			"arg": lastLine[1],
-		}
-		return cmdMap
+	if len(splitData) == 2 {
+		cmd.Type = splitData[0]
+		cmd.Arg = splitData[1]
+		fmt.Printf("returning cmdMap: %v\n", cmd)
 	}
-	return nil
+	return cmd
 }
 
 func PIDOneCheck() bool {
@@ -197,6 +204,9 @@ func main() {
 	go func() {
 		sig := <-sigChan
 		fmt.Printf("Received signal: %v\n", sig)
+		if sig == syscall.SIGINT || sig == syscall.SIGTERM {
+			os.Exit(1)
+		}
 	}()
 
 	for {
@@ -208,9 +218,9 @@ func main() {
 		}
 		if len(data) > 0 {
 			fmt.Printf("Received data: %v\n", data)
-			cmdMap := ParsePipeData(data)
+			cmd := ParsePipeData(data)
 
-			if cmdMap != nil {
+			if !cmd.IsEmpty() {
 				// route
 			}
 		}
