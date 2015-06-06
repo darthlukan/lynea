@@ -1,10 +1,11 @@
 package main
 
 import (
-	// "errors"
 	"bufio"
+	// "errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -65,13 +66,11 @@ func RouteCommand(cmd Command) error {
 	return err
 }
 
-func Exec() {
-	// Execute command
-}
-
-func Fork() {
-	// Make a channel for the supplied service arg
-	// append it to ProcessChanStack
+func Fork(command string) error {
+	var err error
+	prog := exec.Command(command)
+	go prog.Start()
+	return err
 }
 
 func Reboot() {
@@ -172,8 +171,12 @@ func PIDOneCheck() bool {
 	var lines []string
 
 	scanner := bufio.NewScanner(pfile)
+	lineCounter := 0
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
+		if lineCounter++; lineCounter >= 1 {
+			break
+		}
 	}
 
 	if strings.Contains(lines[0], "lynea") {
