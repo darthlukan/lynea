@@ -1,0 +1,4 @@
+[package]
+name = "lynea"
+version = "0.1.0"
+authors = ["Brian Tomlinson <darthlukan@gmail.com>"]
