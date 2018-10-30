@@ -1,5 +1,23 @@
 # lynea
 
+## DO NOT USE
+
+When I had the idea of writing an init system in Go or Rust, it was because I didn't see any other project doing it and
+I thought that it would be a fun exercise, especially given the hubbubb around systemd. Thanks to various major life
+events, I was never really able to dedicate the time I needed to learn all of the relevant concepts well enough to
+confidently "blaze the path" that I saw in my head.
+
+Now, after roughly 3 years of inactivity in this project and with the idea being mostly unoriginal, I'm comfortable
+"sunsetting" this project.
+
+I may get the wild bug to make the attempt again, I may not. Mark this as a lesson: Big ideas are great, but if you
+don't execute all you have is a dream.
+
+I won't be removing this repo, instead, I want to keep it as a reminder to myself that an idea without proper planning 
+and the will to dedicate the time (for whatever valid reasons) has failed before it began.
+
+-- Brian
+
 [![Join the chat at https://gitter.im/darthlukan/lynea](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/darthlukan/lynea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 > Author: Brian Tomlinson <brian.tomlinson@linux.com>
